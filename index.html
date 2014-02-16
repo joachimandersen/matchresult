@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="css/bootstrap.css" rel="stylesheet" />
+
+</head>
+<body ng-app="apps">
+
+    <div class="navbar-wrapper">
+        <div class="container">
+
+            <div class="navbar navbar-inverse navbar-static-top" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#">Project name</a>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="#">Home</a></li>
+                            <li><a href="#about">About</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">Action</a></li>
+                                    <li><a href="#">Another action</a></li>
+                                    <li><a href="#">Something else here</a></li>
+                                    <li class="divider"></li>
+                                    <li class="dropdown-header">Nav header</li>
+                                    <li><a href="#">Separated link</a></li>
+                                    <li><a href="#">One more separated link</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="container">
+        <match-result sport="squash"></match-result>
+    </div>
+
+    <script src="scripts/jquery-2.1.0.js"></script>
+    <script src="scripts/bootstrap.js"></script>
+    <script src="scripts/angular.js"></script>
+
+    <script type="text/ng-template" id="match-result.html">
+        <div>
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-sm-2">
+                        <span ng-bind="challenger"></span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span ng-bind="challenged"></span>
+                    </div>
+                </div>
+                <div ng-repeat="set in sets" class="form-group">
+                    <div class="col-sm-2">
+                        <input type="text" ng-model="set.home" class="form-control" id="set_home_{{$index}}" required="required" integers-only set-score>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" ng-model="set.away" class="form-control" id="set_away_{{$index}}" required="required" integers-only>
+                    </div>
+                    <span class="glyphicon glyphicon-ok" ng-show="set.valid"></span>
+                    <button class="btn btn-danger" ng-click="sets.splice($index, 1)"><span class="glyphicon glyphicon-remove"></span></button>
+                </div>
+            </div>
+            <button class="btn btn-primary" ng-click="add()">Add</button>
+        </div>
+
+    </script>
+
+    <script type="text/javascript">
+        'use strict';
+
+        var app = angular.module('apps', []);
+
+        app.directive('integersOnly', function () {
+            return {
+                require: 'ngModel',
+                link: function (scope, element, attrs, modelCtrl) {
+
+                    modelCtrl.$parsers.push(function (inputValue) {
+                        if (inputValue == undefined) return '';
+                        var transformedInput = inputValue.replace(/[^0-9]/g, '');
+                        if (transformedInput != inputValue) {
+                            modelCtrl.$setViewValue(transformedInput);
+                            modelCtrl.$render();
+                        }
+
+                        return transformedInput;
+                    });
+                }
+            };
+        });
+
+        app.factory('sportService', function($http, $q, $timeout) {
+            return {
+                getSettings: function(sport) {
+                    var deferred = $q.defer();
+
+                    $timeout(function() {
+                        deferred.resolve({data: {
+                            setsPerMatch: 5,
+                            gamesPerSet: 11,
+                            numberOfPointsToWinPerSet: 11,
+                            setsToWin: 3
+                        }});
+                    }, 200);
+
+                    return deferred.promise;
+                }
+            };
+        });
+
+        app.directive('setScore', function() {
+            return {
+                require: 'ngModel',
+                link: function(scope, element, attrs) {
+                    scope.$watch('set.home', function(value) {
+                        if (!value) {
+                            return;
+                        }
+                        scope.set.valid = validateScore(parseInt(value), scope.set.away, scope.settings);
+                    });
+                    scope.$watch('set.away', function(value) {
+                        if (!value) {
+                            return;
+                        }
+                        scope.set.valid = validateScore(scope.set.home, parseInt(value), scope.settings);
+                    });
+
+                    var validateScore = function(h, a, settings) {
+                        var valid = true;
+                        if (isNaN(h) || isNaN(a)) {
+                            //console.log('isNaN was true');
+                            valid = false;
+                        }
+                        else if (Math.abs(h - a) < 2) {
+                            //console.log('Not at least 2 in diff');
+                            valid = false;
+                        }
+                        else if (Math.abs(h - a) > 2 && h > a && h != settings.numberOfPointsToWinPerSet) {
+                            //console.log('Not excactly 2 in diff where max different from 11 a', h, a);
+                            valid = false;
+                        }
+                        else if (Math.abs(h - a) > 2 && h < a && a != settings.numberOfPointsToWinPerSet) {
+                            //console.log('Not excactly 2 in diff where max different from 11 b', h, a);
+                            valid = false;
+                        }
+                        else if (h < settings.numberOfPointsToWinPerSet && a < settings.numberOfPointsToWinPerSet) {
+                            //console.log('Both less than 11');
+                            valid = false;
+                        }
+                        return valid;
+                    }
+                }
+            };
+        });
+
+        app.directive('matchResult', function () {
+            return {
+                restrict: 'E',
+                replace: true,
+                templateUrl: 'match-result.html',
+                scope: { sport: '@'},
+                compile: function (element, attributes) {
+                    return function (scope, element, attributes) {
+                    };
+                },
+                controller: function ($scope, $element, sportService) {
+                    sportService.getSettings($scope.sport).then(function(response) {
+                        $scope.settings = response.data;
+                        $scope.sets = [{ home: 0, away: 0, valid: false}];
+                        $scope.challenger = 'Joachim Andersen';
+                        $scope.challenged = 'Simon Wager';
+                    });
+
+                    $scope.add = function () {
+                        $scope.sets.push({ home: 0, away: 0, valid: false});
+                    };
+
+                    $scope.$watch('sets', function(value) {
+                        if (!value) {
+                            return;
+                        }
+                        var valid = $scope.validateScore();
+                        console.log(valid);
+                    }, true);
+
+                    $scope.validateScore = function() {
+                        var home = 0;
+                        var away = 0;
+                        var areAllSetScoresValid = true;
+                        angular.forEach($scope.sets, function (set, index) {
+                            console.log(set);
+                            if (set.home > set.away) {
+                                home++;
+                            }
+                            else if (set.home < set.away) {
+                                away++;
+                            }
+                            console.log(home, away);
+                            areAllSetScoresValid = areAllSetScoresValid && set.valid;
+                        });
+                        console.log(areAllSetScoresValid);
+                    }
+                }
+            };
+        });
+    </script>
+
+</body>
+</html>
