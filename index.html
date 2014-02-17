@@ -3,6 +3,15 @@
 <head>
     <title></title>
     <link href="css/bootstrap.css" rel="stylesheet" />
+    <style type="text/css">
+        .glyphicon-ok {
+            color: #47a447;
+        }
+        .alert-list {
+            list-style: none;
+            margin-left: 0px;
+        }
+    </style>
 
 </head>
 <body ng-app="apps">
@@ -48,6 +57,7 @@
 
     <div class="container">
         <match-result sport="squash"></match-result>
+        <notifications></notifications>
     </div>
 
     <script src="scripts/jquery-2.1.0.js"></script>
@@ -58,6 +68,8 @@
         <div>
             <div class="form-horizontal">
                 <div class="form-group">
+                    <div class="col-sm-1">
+                    </div>
                     <div class="col-sm-2">
                         <span ng-bind="challenger" ng-class="{h4: homeWinner}"></span>
                     </div>
@@ -66,6 +78,9 @@
                     </div>
                 </div>
                 <div ng-repeat="set in sets" class="form-group">
+                    <div class="col-sm-1">
+                        {{$index+1}}.
+                    </div>
                     <div class="col-sm-2">
                         <input type="text" ng-model="set.home" class="form-control" id="set_home_{{$index}}" required="required" integers-only set-score>
                     </div>
@@ -74,15 +89,49 @@
                     </div>
                     <span class="glyphicon glyphicon-ok" ng-show="set.valid"></span>
                 </div>
+                <div class="form-group">
+                    <div class="col-sm-2">
+                        <span class="btn btn-success" ng-show="winnerFound" ng-click="save()">Save</span>
+                    </div>
+                </div>
             </div>
         </div>
+    </script>
 
+    <script type="text/ng-template" id="notifications.html">
+        <ul class="alert-list">
+            <li ng-repeat="notification in notifications" class="alert alert-{{notification.type}} alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <strong>{{notification.title}}</strong>: {{notification.message}}
+            </li>
+        </ul>
     </script>
 
     <script type="text/javascript">
         'use strict';
 
         var app = angular.module('apps', []);
+
+        app.directive('notifications', function() {
+            return {
+                restrict: 'E',
+                replace: true,
+                templateUrl: 'notifications.html',
+                scope: { sport: '@'},
+                compile: function (element, attributes) {
+                    return function (scope, element, attributes) {
+                    };
+                },
+                controller: function ($scope, $element, $rootScope, sportService) {
+                    $rootScope.$watch('notifications', function(value) {
+                        if(!value) {
+                            return;
+                        }
+                        $scope.notifications = value;
+                    });
+                }
+            };
+        });
 
         app.directive('integersOnly', function () {
             return {
@@ -103,7 +152,7 @@
             };
         });
 
-        app.factory('sportService', function($http, $q, $timeout) {
+        app.factory('sportService', function($http, $rootScope, $q, $timeout) {
             return {
                 getSettings: function(sport) {
                     var deferred = $q.defer();
@@ -114,6 +163,19 @@
                             gamesPerSet: 11,
                             numberOfPointsToWinPerSet: 11,
                             setsToWin: 3
+                        }});
+                    }, 200);
+
+                    return deferred.promise;
+                },
+                saveResult: function(sets) {
+                    var deferred = $q.defer();
+
+                    $timeout(function() {
+                        deferred.resolve({data: {
+                            type: 'success',
+                            title: 'Saved',
+                            message: 'The match result was saved with success'
                         }});
                     }, 200);
 
@@ -179,13 +241,26 @@
                     return function (scope, element, attributes) {
                     };
                 },
-                controller: function ($scope, $element, sportService) {
+                controller: function ($scope, $element, $rootScope, $timeout, sportService) {
                     sportService.getSettings($scope.sport).then(function(response) {
                         $scope.settings = response.data;
                         $scope.sets = [];
                         $scope.challenger = 'Joachim Andersen';
                         $scope.challenged = 'Simon Wager';
+                        $scope.winnerFound = false;
                     });
+
+                    $scope.save = function() {
+                        sportService.saveResult($scope.sets).then(function(response) {
+                            if (!$rootScope.notifications) {
+                                $rootScope.notifications = [];
+                            }
+                            $rootScope.notifications.push(response.data);
+                            $timeout(function() {
+                                $rootScope.notifications = [];
+                            }, 6000);
+                        });
+                    };
 
                     $scope.add = function () {
                         $scope.sets.push({ home: 0, away: 0, valid: false});
@@ -228,6 +303,7 @@
                         var awayDiff = $scope.settings.setsToWin - away;
                         $scope.homeWinner = $scope.settings.setsToWin == home;
                         $scope.awayWinner = $scope.settings.setsToWin == away;
+                        $scope.winnerFound = $scope.homeWinner || $scope.awayWinner;
                         return $scope.settings.setsToWin * 2 - Math.max(homeDiff, awayDiff);
                     };
                 }
