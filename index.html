@@ -11,6 +11,9 @@
             list-style: none;
             margin-left: 0px;
         }
+        .set-winner {
+            border: 2px solid #47a447;
+        }
     </style>
 
 </head>
@@ -82,10 +85,10 @@
                         {{$index+1}}.
                     </div>
                     <div class="col-sm-2">
-                        <input type="text" ng-model="set.home" class="form-control" id="set_home_{{$index}}" required="required" integers-only set-score>
+                        <input type="text" ng-model="set.home" ng-class="{'set-winner': homeSetWinner}" class="form-control" id="set_home_{{$index}}" required="required" integers-only set-score>
                     </div>
                     <div class="col-sm-2">
-                        <input type="text" ng-model="set.away" class="form-control" id="set_away_{{$index}}" required="required" integers-only>
+                        <input type="text" ng-model="set.away" ng-class="{'set-winner': awaySetWinner}" class="form-control" id="set_away_{{$index}}" required="required" integers-only>
                     </div>
                     <span class="glyphicon glyphicon-ok" ng-show="set.valid"></span>
                 </div>
@@ -192,14 +195,19 @@
                         if (!value) {
                             return;
                         }
-                        scope.set.valid = validateScore(parseInt(value), scope.set.away, scope.settings);
+                        scope.set.valid = validateScore(value, scope.set.away, scope.settings);
+                        scope.homeSetWinner = parseInt(scope.set.home) > parseInt(scope.set.away) && scope.set.valid;
+                        scope.awaySetWinner = parseInt(scope.set.home) < parseInt(scope.set.away) && scope.set.valid;
                     });
                     scope.$watch('set.away', function(value) {
                         if (!value) {
                             return;
                         }
-                        scope.set.valid = validateScore(scope.set.home, parseInt(value), scope.settings);
+                        scope.set.valid = validateScore(scope.set.home, value, scope.settings);
+                        scope.homeSetWinner = parseInt(scope.set.home) > parseInt(scope.set.away) && scope.set.valid;
+                        scope.awaySetWinner = parseInt(scope.set.home) < parseInt(scope.set.away) && scope.set.valid;
                     });
+                    
 
                     var validateScore = function(home, away, settings) {
                         var valid = true;
