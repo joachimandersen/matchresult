@@ -59,10 +59,10 @@
             <div class="form-horizontal">
                 <div class="form-group">
                     <div class="col-sm-2">
-                        <span ng-bind="challenger"></span>
+                        <span ng-bind="challenger" ng-class="{h4: homeWinner}"></span>
                     </div>
                     <div class="col-sm-2">
-                        <span ng-bind="challenged"></span>
+                        <span ng-bind="challenged" ng-class="{h4: awayWinner}"></span>
                     </div>
                 </div>
                 <div ng-repeat="set in sets" class="form-group">
@@ -73,10 +73,8 @@
                         <input type="text" ng-model="set.away" class="form-control" id="set_away_{{$index}}" required="required" integers-only>
                     </div>
                     <span class="glyphicon glyphicon-ok" ng-show="set.valid"></span>
-                    <button class="btn btn-danger" ng-click="sets.splice($index, 1)"><span class="glyphicon glyphicon-remove"></span></button>
                 </div>
             </div>
-            <button class="btn btn-primary" ng-click="add()">Add</button>
         </div>
 
     </script>
@@ -141,8 +139,10 @@
                         scope.set.valid = validateScore(scope.set.home, parseInt(value), scope.settings);
                     });
 
-                    var validateScore = function(h, a, settings) {
+                    var validateScore = function(home, away, settings) {
                         var valid = true;
+                        var h = parseInt(home);
+                        var a = parseInt(away);
                         if (isNaN(h) || isNaN(a)) {
                             //console.log('isNaN was true');
                             valid = false;
@@ -182,7 +182,7 @@
                 controller: function ($scope, $element, sportService) {
                     sportService.getSettings($scope.sport).then(function(response) {
                         $scope.settings = response.data;
-                        $scope.sets = [{ home: 0, away: 0, valid: false}];
+                        $scope.sets = [];
                         $scope.challenger = 'Joachim Andersen';
                         $scope.challenged = 'Simon Wager';
                     });
@@ -191,31 +191,45 @@
                         $scope.sets.push({ home: 0, away: 0, valid: false});
                     };
 
+                    $scope.remove = function () {
+                        $scope.sets.pop();
+                    };
+
                     $scope.$watch('sets', function(value) {
                         if (!value) {
                             return;
                         }
-                        var valid = $scope.validateScore();
-                        console.log(valid);
+                        var neededSets = $scope.getMinimunNumberOfSetsNeededToReportResult(value);
+                        while (value.length != neededSets) {
+                            if (value.length < neededSets) {
+                                $scope.add();
+                            }
+                            else {
+                                $scope.remove();
+                            }
+                        }
                     }, true);
 
-                    $scope.validateScore = function() {
+                    $scope.getMinimunNumberOfSetsNeededToReportResult = function(sets) {
                         var home = 0;
                         var away = 0;
-                        var areAllSetScoresValid = true;
-                        angular.forEach($scope.sets, function (set, index) {
-                            console.log(set);
-                            if (set.home > set.away) {
+                        var setsPlayed = 0;
+                        angular.forEach(sets, function (set, index) {
+                            if (parseInt(set.home) > parseInt(set.away) && set.valid) {
                                 home++;
+                                setsPlayed++;
                             }
-                            else if (set.home < set.away) {
+                            else if (parseInt(set.home) < parseInt(set.away) && set.valid) {
                                 away++;
+                                setsPlayed++;
                             }
-                            console.log(home, away);
-                            areAllSetScoresValid = areAllSetScoresValid && set.valid;
                         });
-                        console.log(areAllSetScoresValid);
-                    }
+                        var homeDiff = $scope.settings.setsToWin - home;
+                        var awayDiff = $scope.settings.setsToWin - away;
+                        $scope.homeWinner = $scope.settings.setsToWin == home;
+                        $scope.awayWinner = $scope.settings.setsToWin == away;
+                        return $scope.settings.setsToWin * 2 - Math.max(homeDiff, awayDiff);
+                    };
                 }
             };
         });

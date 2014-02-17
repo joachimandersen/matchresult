@@ -4,6 +4,42 @@
 		"selected_items":
 		[
 			[
+				"awa",
+				"awayDiff"
+			],
+			[
+				"home",
+				"homeDiff"
+			],
+			[
+				"set",
+				"setsPlayed"
+			],
+			[
+				"va",
+				"valid"
+			],
+			[
+				"se",
+				"settings"
+			],
+			[
+				"vali",
+				"validateScore"
+			],
+			[
+				"val",
+				"validateScore"
+			],
+			[
+				"e",
+				"else"
+			],
+			[
+				"re",
+				"require"
+			],
+			[
 				"in",
 				"input"
 			],
@@ -12,16 +48,8 @@
 				"areaStyle"
 			],
 			[
-				"val",
-				"value"
-			],
-			[
 				"image",
 				"imageId"
-			],
-			[
-				"va",
-				"value"
 			],
 			[
 				"y",
@@ -90,10 +118,6 @@
 			[
 				"a",
 				"addHourReport"
-			],
-			[
-				"se",
-				"seNumber"
 			],
 			[
 				"typ",
@@ -284,16 +308,8 @@
 				"target"
 			],
 			[
-				"set",
-				"setSelection"
-			],
-			[
 				"edi",
 				"editor"
-			],
-			[
-				"re",
-				"remove"
 			],
 			[
 				"fu",
@@ -498,27 +514,27 @@
 			[
 				"fn",
 				"function"
-			],
-			[
-				"call",
-				"callback"
-			],
-			[
-				"key",
-				"keyCode"
-			],
-			[
-				"bat",
-				"batchsize"
-			],
-			[
-				"columnh",
-				"columnheight"
 			]
 		]
 	},
 	"buffers":
 	[
+		{
+			"file": "index.html",
+			"settings":
+			{
+				"buffer_size": 10450,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "templates/match-result.html",
+			"settings":
+			{
+				"buffer_size": 969,
+				"line_ending": "Windows"
+			}
+		}
 	],
 	"build_system": "",
 	"command_palette":
@@ -693,6 +709,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"\n</",
 			">",
 			"item",
 			"tab",
@@ -819,8 +836,7 @@
 			"_navigatePrevious",
 			"_slideAnimation",
 			"animage",
-			"navigatene",
-			"_loadFeaturedBoards"
+			"navigatene"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -844,8 +860,69 @@
 	"groups":
 	[
 		{
+			"selected": 0,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "index.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10450,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9361,
+								9361
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3015.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "templates/match-result.html",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 969,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								969
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
 			]
 		}
 	],
